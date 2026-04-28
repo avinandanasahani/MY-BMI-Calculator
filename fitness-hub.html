@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced BMI Calculator</title>
+    <meta name="description" content="Free Advanced BMI Calculator. Check your Body Mass Index, healthy weight range, BMI Prime, and Ponderal Index accurately using metric or US units.">
+    <meta name="keywords" content="BMI calculator, Body Mass Index, health calculators, ideal weight, fitness tools">
+    <meta name="author" content="Avinandana Sahani">
+    <meta name="robots" content="index, follow">>
+    <style>
+        /* Base & Layout */
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; line-height: 1.6; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* Two Column Layout */
+        .calc-wrapper { display: flex; flex-wrap: wrap; gap: 30px; margin-bottom: 30px; }
+        .calc-input-area { flex: 1; min-width: 300px; background: #f1f5f9; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .calc-result-area { flex: 1; min-width: 300px; padding: 10px; display: none; }
+        
+        /* Tabs */
+        .tabs { display: flex; margin-bottom: 15px; border-bottom: 2px solid #2563eb; }
+        .tab { padding: 8px 15px; cursor: pointer; background: #e2e8f0; border-radius: 4px 4px 0 0; margin-right: 5px; font-weight: bold; color: #475569; }
+        .tab.active { background: #2563eb; color: #fff; }
+
+        /* Form Elements */
+        .form-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .form-row label.label-title { width: 80px; font-weight: bold; font-size: 14px; }
+        .form-row input[type="number"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .unit-label { width: 40px; text-align: right; font-size: 14px; color: #666; }
+        .radio-group { display: flex; gap: 15px; align-items: center; }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-calc { background: #4caf50; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; flex: 2; font-size: 16px; }
+        .btn-calc:hover { background: #45a049; }
+        .btn-clear { background: #94a3b8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; flex: 1; font-size: 16px; }
+
+        /* Result Area Styling */
+        .result-header { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+        .status-text { font-weight: bold; }
+        
+       /* Visual Meter Fixed Math */
+        .meter-container { margin: 25px 0 40px 0; position: relative; }
+        .meter-bar { 
+            width: 100%; 
+            height: 18px; 
+            border-radius: 10px; 
+            /* Exact BMI Mapping: 15 to 40 */
+            /* Blue(0-14%), Green(14-40%), Yellow(40-60%), Red(60-100%) */
+            background: linear-gradient(to right, 
+                #3498db 0%, #3498db 14%, 
+                #2ecc71 14%, #2ecc71 40%, 
+                #f1c40f 40%, #f1c40f 60%, 
+                #e74c3c 60%, #e74c3c 100%); 
+            position: relative; 
+        }
+        .meter-pointer { 
+            position: absolute; 
+            top: -14px; 
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent; 
+            border-right: 10px solid transparent; 
+            border-top: 14px solid #000; 
+            transition: left 0.5s ease-out; 
+            transform: translateX(-50%); 
+            z-index: 2;
+        }
+        .meter-labels { position: absolute; width: 100%; height: 20px; top: 22px; }
+        .meter-labels span { 
+            position: absolute; 
+            font-size: 12px; 
+            color: #555; 
+            transform: translateX(-50%); 
+            font-weight: bold;
+        }
+
+        /* Extra Details List */
+        .extra-details { list-style: disc; padding-left: 20px; margin-top: 20px; font-size: 14px; color: #444; }
+        .extra-details li { margin-bottom: 5px; }
+
+        /* SEO Text Section */
+        .seo-content { border-top: 1px solid #ddd; padding-top: 20px; }
+        .seo-content h2, .seo-content h3 { color: #1e3a8a; }
+        .seo-content p { margin-bottom: 15px; font-size: 15px; }
+        .bmi-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 25px; }
+        .bmi-table th, .bmi-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .bmi-table th { background-color: #f1f5f9; }
+
+        /* Smooth Fade-In Animation for Results */
+@keyframes popIn {
+    0% { opacity: 0; transform: translateY(15px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#result-area {
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="color: #1e3a8a; margin-top: 0;">BMI Calculator</h1>
+    <p>Modify the values and click the Calculate button to use</p>
+
+    <div class="calc-wrapper">
+        <div class="calc-input-area">
+            <div class="tabs">
+                <div class="tab active" id="tab-metric" onclick="switchTab('metric')">Metric Units</div>
+                <div class="tab" id="tab-us" onclick="switchTab('us')">US Units</div>
+            </div>
+
+            <div class="form-row">
+                <label class="label-title">Age</label>
+                <input type="number" id="age" value="25" min="2" max="120">
+                <span class="unit-label">ages</span>
+            </div>
+
+            <div class="form-row">
+                <label class="label-title">Gender</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="gender" value="male" checked> Male</label>
+                    <label><input type="radio" name="gender" value="female"> Female</label>
+                </div>
+            </div>
+
+            <div id="metric-inputs">
+                <div class="form-row">
+                    <label class="label-title">Height</label>
+                    <input type="number" id="height-cm" placeholder="180">
+                    <span class="unit-label">cm</span>
+                </div>
+                <div class="form-row">
+                    <label class="label-title">Weight</label>
+                    <input type="number" id="weight-kg" placeholder="65">
+                    <span class="unit-label">kg</span>
+                </div>
+            </div>
+
+            <div id="us-inputs" style="display: none;">
+                <div class="form-row">
+                    <label class="label-title">Height</label>
+                    <input type="number" id="height-ft" placeholder="5" style="margin-right: 5px;"> ft
+                    <input type="number" id="height-in" placeholder="10" style="margin-left: 10px;"> in
+                </div>
+                <div class="form-row">
+                    <label class="label-title">Weight</label>
+                    <input type="number" id="weight-lbs" placeholder="160">
+                    <span class="unit-label">lbs</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-calc" onclick="calculate()">Calculate &#9658;</button>
+                <button class="btn-clear" onclick="clearForm()">Clear</button>
+            </div>
+        </div>
+
+        <div class="calc-result-area" id="result-area">
+            <div class="result-header">
+                BMI = <span id="bmi-val">20.1</span> kg/m² 
+                <span id="bmi-status" class="status-text">(Normal)</span>
+            </div>
+            
+           <div class="meter-container">
+                <div class="meter-pointer" id="meter-pointer" style="left: 50%;"></div>
+                <div class="meter-bar"></div>
+                <div class="meter-labels">
+                    <span style="left: 7%;">Underweight</span>
+                    <span style="left: 27%;">Normal</span>
+                    <span style="left: 50%;">Overweight</span>
+                    <span style="left: 80%;">Obese</span>
+                </div>
+            </div>
+
+            <ul class="extra-details">
+                <li>Healthy BMI range: <strong>18.5 kg/m² - 25 kg/m²</strong></li>
+                <li>Healthy weight for the height: <strong id="healthy-weight">59.9 kg - 81.0 kg</strong></li>
+                <li>BMI Prime: <strong id="bmi-prime">0.8</strong></li>
+                <li>Ponderal Index: <strong id="ponderal-index">11.1 kg/m³</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="seo-content">
+        <p>The Body Mass Index (BMI) Calculator can be used to calculate BMI value and corresponding weight status while taking age into consideration. Use the "Metric Units" tab for the International System of Units or the "US Units" tab to convert units into either US or metric units. Note that the calculator also computes the Ponderal Index in addition to BMI, both of which are discussed below in detail.</p>
+        
+        <h2>BMI Introduction</h2>
+        <p>BMI is a measurement of a person's leanness or corpulence based on their height and weight, and is intended to quantify tissue mass. It is widely used as a general indicator of whether a person has a healthy body weight for their height. Specifically, the value obtained from the calculation of BMI is used to categorize whether a person is underweight, normal weight, overweight, or obese depending on what range the value falls between.</p>
+        
+        <h2>BMI Table for Adults</h2>
+        <p>This is the World Health Organization's (WHO) recommended body weight based on BMI values for adults. It is used for both men and women, age 20 or older.</p>
+        
+        <table class="bmi-table">
+            <tr>
+                <th>Classification</th>
+                <th>BMI range - kg/m²</th>
+            </tr>
+            <tr>
+                <td>Severe Thinness</td>
+                <td>< 16</td>
+            </tr>
+            <tr>
+                <td>Moderate Thinness</td>
+                <td>16 - 17</td>
+            </tr>
+            <tr>
+                <td>Mild Thinness</td>
+                <td>17 - 18.5</td>
+            </tr>
+            <tr>
+                <td>Normal</td>
+                <td>18.5 - 25</td>
+            </tr>
+            <tr>
+                <td>Overweight</td>
+                <td>25 - 30</td>
+            </tr>
+            <tr>
+                <td>Obese Class I</td>
+                <td>30 - 35</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script>
+    let currentUnit = 'metric';
+
+    function switchTab(unit) {
+        currentUnit = unit;
+        document.getElementById('tab-metric').classList.remove('active');
+        document.getElementById('tab-us').classList.remove('active');
+        document.getElementById('tab-' + unit).classList.add('active');
+
+        if(unit === 'metric') {
+            document.getElementById('metric-inputs').style.display = 'block';
+            document.getElementById('us-inputs').style.display = 'none';
+        } else {
+            document.getElementById('metric-inputs').style.display = 'none';
+            document.getElementById('us-inputs').style.display = 'block';
+        }
+    }
+
+    function clearForm() {
+        document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+        document.getElementById('result-area').style.display = 'none';
+    }
+
+    function calculate() {
+        let weight, height, heightMeters;
+
+        if (currentUnit === 'metric') {
+            height = parseFloat(document.getElementById('height-cm').value);
+            weight = parseFloat(document.getElementById('weight-kg').value);
+            if (!height || !weight) return alert('Please enter height and weight.');
+            heightMeters = height / 100;
+        } else {
+            let ft = parseFloat(document.getElementById('height-ft').value) || 0;
+            let inc = parseFloat(document.getElementById('height-in').value) || 0;
+            let lbs = parseFloat(document.getElementById('weight-lbs').value);
+            if ((ft === 0 && inc === 0) || !lbs) return alert('Please enter height and weight.');
+            
+            // Convert to metric for standard calculation
+            heightMeters = ((ft * 12) + inc) * 0.0254; 
+            weight = lbs * 0.453592;
+        }
+
+        // Calculations
+        let bmi = weight / (heightMeters * heightMeters);
+        let minWeight = 18.5 * (heightMeters * heightMeters);
+        let maxWeight = 25 * (heightMeters * heightMeters);
+        let bmiPrime = bmi / 25;
+        let ponderal = weight / Math.pow(heightMeters, 3);
+
+        // Display Data
+        document.getElementById('result-area').style.display = 'block';
+        document.getElementById('bmi-val').innerText = bmi.toFixed(1);
+        
+        // Status Logic & Colors
+        let status = "";
+        let color = "";
+        if (bmi < 16) { status = "Severe Thinness"; color = "#3498db"; }
+        else if (bmi < 18.5) { status = "Underweight"; color = "#5dade2"; }
+        else if (bmi < 25) { status = "Normal"; color = "#2ecc71"; }
+        else if (bmi < 30) { status = "Overweight"; color = "#f1c40f"; }
+        else { status = "Obese"; color = "#e74c3c"; }
+
+        let statusEl = document.getElementById('bmi-status');
+        statusEl.innerText = `(${status})`;
+        statusEl.style.color = color;
+
+        // Extra details formatting
+        let weightUnitStr = currentUnit === 'metric' ? 'kg' : 'lbs';
+        let minWDisplay = currentUnit === 'metric' ? minWeight.toFixed(1) : (minWeight * 2.20462).toFixed(1);
+        let maxWDisplay = currentUnit === 'metric' ? maxWeight.toFixed(1) : (maxWeight * 2.20462).toFixed(1);
+
+        document.getElementById('healthy-weight').innerText = `${minWDisplay} ${weightUnitStr} - ${maxWDisplay} ${weightUnitStr}`;
+        document.getElementById('bmi-prime').innerText = bmiPrime.toFixed(2);
+        document.getElementById('ponderal-index').innerText = `${ponderal.toFixed(1)} kg/m³`;
+
+        // Update Graphic Pointer (Fixed Scale 15 to 40)
+        let percent = ((bmi - 15) / 25) * 100;
+        if(percent < 0) percent = 0;
+        if(percent > 100) percent = 100;
+        document.getElementById('meter-pointer').style.left = percent + '%';
+    }
+</script>
+
+</body>
+</html>
