@@ -7,7 +7,7 @@
     <meta name="description" content="Free Advanced BMI Calculator. Check your Body Mass Index, healthy weight range, BMI Prime, and Ponderal Index accurately using metric or US units.">
     <meta name="keywords" content="BMI calculator, Body Mass Index, health calculators, ideal weight, fitness tools">
     <meta name="author" content="Avinandana Sahani">
-    <meta name="robots" content="index, follow">>
+    <meta name="robots" content="index, follow">
     <style>
         /* Base & Layout */
         body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; line-height: 1.6; padding: 20px; }
@@ -124,6 +124,7 @@
                 <div class="radio-group">
                     <label><input type="radio" name="gender" value="male" checked> Male</label>
                     <label><input type="radio" name="gender" value="female"> Female</label>
+                    <label><input type="radio" name="gender" value="Transgander"> Transgander</label>
                 </div>
             </div>
 
@@ -140,11 +141,15 @@
                 </div>
             </div>
 
-            <div id="us-inputs" style="display: none;">
+           <div id="us-inputs" style="display: none;">
                 <div class="form-row">
                     <label class="label-title">Height</label>
-                    <input type="number" id="height-ft" placeholder="5" style="margin-right: 5px;"> ft
-                    <input type="number" id="height-in" placeholder="10" style="margin-left: 10px;"> in
+                    <div style="display: flex; flex: 1; align-items: center;">
+                        <input type="number" id="height-ft" placeholder="5" style="min-width: 0; margin-right: 5px;"> 
+                        <span>ft</span>
+                        <input type="number" id="height-in" placeholder="10" style="min-width: 0; margin-left: 10px; margin-right: 5px;"> 
+                        <span>in</span>
+                    </div>
                 </div>
                 <div class="form-row">
                     <label class="label-title">Weight</label>
@@ -152,7 +157,7 @@
                     <span class="unit-label">lbs</span>
                 </div>
             </div>
-
+            
             <div class="btn-group">
                 <button class="btn-calc" onclick="calculate()">Calculate &#9658;</button>
                 <button class="btn-clear" onclick="clearForm()">Clear</button>
